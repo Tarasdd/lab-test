@@ -10,22 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      localstack:
-        image: localstack/localstack
-        ports:
-          - 4566:4566
-        options: >-
-          --health-cmd "curl -f http://localhost:4566/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        env:
-          SERVICES: sqs
-          DEBUG: 1
-          DATA_DIR: /tmp/localstack/data
-          DOCKER_HOST: unix:///var/run/docker.sock
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -40,12 +24,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r services/requirements.txt
 
+    - name: Start LocalStack
+      uses: localstack/setup-localstack@v0.2.3
+      with:
+        image-tag: 'latest'
+        install-awslocal: 'true'
+      env:
+        SERVICES: sqs
+        DEFAULT_REGION: us-east-1
+
     - name: Wait for LocalStack to be ready
       run: |
-        until curl -s http://localhost:4566/health | grep "\"sqs\": \"running\""; do
-          echo "Waiting for LocalStack..."
-          sleep 5
-        done
+        echo "Waiting for LocalStack to be ready..."
+        sleep 10
 
     - name: Run tests with pytest
       run: |
