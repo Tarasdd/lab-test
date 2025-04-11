@@ -30,7 +30,7 @@ jobs:
         image-tag: 'latest'
         install-awslocal: 'true'
       env:
-        SERVICES: sqs
+        SERVICES: sqs,dynamodb
         DEFAULT_REGION: us-east-1
 
     - name: Wait for LocalStack to be ready
